@@ -1,0 +1,65 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, input, select, textarea {
+    font-family: monospace;
+}
+
+input {
+    outline: none!important;
+}
+
+
+.half-size {
+    width: 50%; height: 100%;
+    overflow: auto;
+    float: left;
+    padding: 10px;
+    border: 1px solid #eee;
+}
+
+
+
+.input-pair {
+    display: block;
+}
+.input-pair > * {
+    display: inline-block;
+}
+.input-pair > div {
+    width: 200px;
+}
+
+
+
+.representation, .representation input {
+    font-size: 11px;
+    line-height: 16px;
+    color: #333;
+}
+
+.representation {
+
+}
+
+.representation input {
+    border: 0 solid #ddd;
+    border-bottom-width: 1px;
+}
+
+.half-size > .representation {
+    margin-bottom: 40px;
+}
+.half-size > .representation > .title {
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+
+
+.values-group {
+    padding-left: 20px;
+}
