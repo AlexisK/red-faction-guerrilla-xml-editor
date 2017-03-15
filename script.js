@@ -220,7 +220,7 @@ var globalNoticedFields = {};
         if ( typeof(data) === 'object' ) {
             for (var k in data) {
                 let key = k.split('#')[0];
-                if ( WORKERS[key] ) {
+                if ( WORKERS[key] && typeof(data[k]) === 'object' ) {
                     WORKERS[key](data[k]);
                 } else {
                     iterateSchema(data[k]);
@@ -273,7 +273,11 @@ var globalNoticedFields = {};
 generateWorker('item');
 generateWorker('gamestatedata');
 generateWorker('weapon', 'ammo_type,magazine_size,max_rounds,damage_scaling_min,damage_scaling_max');
-generateWorker('explosion', 'ai_sound_radius,radus,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
+generateWorker('upgrade', 'levels');
+generateWorker('explosion', 'ai_sound_radius,radius,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
+generateWorker('vehicle', 'max_hitpoints,mass,collision_damage_scale');
+generateWorker('character', 'max_hit_points,max_speed,inventory,flags');
+generateWorker('meleemove');
 
 
 textInput.onblur = processInput;
