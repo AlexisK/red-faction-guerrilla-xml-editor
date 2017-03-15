@@ -39,6 +39,7 @@
             ref[key] = inputNode.value;
             renderResult();
         };
+
         return parent;
     }
 
@@ -78,11 +79,12 @@
         createBlock(document.body)
     ];
 
-    var fileInput    = document.createElement('input');
-    var textInput    = createTextInput(layers[1]);
-    var workBlock    = makeHalfSize(createBlock(layers[1]));
-    var textOutput   = makeHalfSize(createBlock(layers[2]));
-    var globalScheme = null;
+    var fileInput        = document.createElement('input');
+    var textInput        = createTextInput(layers[1]);
+    var workBlock        = makeHalfSize(createBlock(layers[1]));
+    var textOutput       = makeHalfSize(createBlock(layers[2]));
+    var globalWorksBlock = makeHalfSize(createBlock(layers[2]));
+    var globalScheme     = null;
 
     fileInput.type = "file";
     layers[0].appendChild(fileInput);
@@ -95,9 +97,11 @@
 }
 
 // processing
-var WORKERS = {
+var WORKERS    = {
     //weapon : data => representRef('weapon: ' + data.name, data)
 };
+var globalRefs = [];
+var globalNoticedFields = {};
 
 
 // processing functions
@@ -124,7 +128,26 @@ var WORKERS = {
     }
 
     function representRef(title, ref, target) {
-        let parent            = createBlock(target || workBlock);
+        let parent = createBlock(target || workBlock);
+
+        if ( !target ) {
+            let chb      = document.createElement('input');
+            chb.type     = 'checkbox';
+            chb.onchange = () => {
+                if ( chb.checked ) {
+                    if ( globalRefs.indexOf(ref) === -1 ) {
+                        globalRefs.push(ref);
+                    }
+                } else {
+                    let ind = globalRefs.indexOf(ref);
+                    if ( ind >= 0 ) {
+                        globalRefs.splice(ind, 1);
+                    }
+                }
+            };
+            parent.appendChild(chb);
+        }
+
         let nodeTitle         = createBlock(parent);
         nodeTitle.textContent = title;
 
@@ -140,6 +163,9 @@ var WORKERS = {
                 representRef(k, data, group);
             } else {
                 valuesBlock.appendChild(createInputPair(ref, k));
+                if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
+                    globalNoticedFields[k] = 1.0;
+                }
             }
         }
     }
@@ -179,31 +205,53 @@ var WORKERS = {
         return target;
     }
 
-    function iterateScheme(data) {
+    function iterateSchema(data) {
         if ( typeof(data) === 'object' ) {
             for (var k in data) {
                 let key = k.split('#')[0];
                 if ( WORKERS[key] ) {
                     WORKERS[key](data[k]);
                 } else {
-                    iterateScheme(data[k]);
+                    iterateSchema(data[k]);
                 }
             }
         }
     }
 
+    function renderResult_iterate(ref, key) {
+        if( typeof(ref[key]) === 'object' ) {
+            let result = {};
+
+            for ( let k in ref[key] ) {
+                result[k] = renderResult_iterate(ref[key], k);
+            }
+
+            return result;
+        }
+
+        if ( globalNoticedFields[key] ) {
+            return ref[key] * globalNoticedFields[key];
+        }
+        return ref[key];
+    }
+
     function renderResult() {
-        textOutput.textContent = renderXMLNodeFromDict(globalScheme).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase()).replace('Root', 'root');
+        let result = renderResult_iterate({root:globalScheme}, 'root');
+
+        textOutput.textContent = renderXMLNodeFromDict(result).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase()).replace('Root', 'root');
     }
 
 
     function processInput() {
         let temp       = createBlock();
         temp.innerHTML = textInput.value.replace(/<(\/?)(\w+)( [^>]+)?>/gi, ['<$1', CONST.tagPrefix, '$2$3>'].join(''));
-        let scheme     = globalScheme = breakXMLToDict(temp);
-        console.log(scheme);
+        let schema     = globalScheme = breakXMLToDict(temp);
+        console.log(schema);
         workBlock.textContent = '';
-        iterateScheme(scheme);
+        globalRefs = [];
+        globalNoticedFields = {};
+        iterateSchema(schema);
+        representRef('Global multipliers', globalNoticedFields, globalWorksBlock);
         renderResult();
     }
 }

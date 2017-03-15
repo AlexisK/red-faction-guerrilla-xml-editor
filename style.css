@@ -41,8 +41,9 @@ input {
     color: #333;
 }
 
-.representation {
-
+.representation > input {
+    float: left;
+    margin-right: 4px;
 }
 
 .representation input {
