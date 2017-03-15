@@ -37,6 +37,7 @@
 
         inputNode.onblur = () => {
             ref[key] = inputNode.value;
+            console.log(ref, key);
             renderResult();
         };
 
@@ -84,7 +85,7 @@
     var workBlock        = makeHalfSize(createBlock(layers[1]));
     var textOutput       = makeHalfSize(createBlock(layers[2]));
     var globalWorksBlock = makeHalfSize(createBlock(layers[2]));
-    var globalScheme     = null;
+    var globalSchema     = null;
 
     fileInput.type = "file";
     layers[0].appendChild(fileInput);
@@ -115,19 +116,13 @@ var globalNoticedFields = {};
                 representRef(type + ': ' + data[nameKey], data)
             } else {
                 if ( fieldsAvailable.split ) { fieldsAvailable = fieldsAvailable.split(','); }
-                let result = {};
-                for (let k in data) {
-                    if ( fieldsAvailable.indexOf(k) >= 0 ) {
-                        result[k] = data[k];
-                    }
-                }
-                representRef(type + ': ' + data[nameKey], result);
+                representRef(type + ': ' + data[nameKey], data, null, fieldsAvailable);
             }
 
         }
     }
 
-    function representRef(title, ref, target) {
+    function representRef(title, ref, target, fieldsList) {
         let parent = createBlock(target || workBlock);
 
         if ( !target ) {
@@ -158,15 +153,31 @@ var globalNoticedFields = {};
 
         for (var k in ref) {
             let data = ref[k];
-            if ( typeof(data) === 'object' ) {
-                let group = createBlock(valuesBlock);
-                representRef(k, data, group);
+
+            if ( !target && fieldsList ) {
+                if (fieldsList.indexOf(k) >= 0) {
+                    if ( typeof(data) === 'object' ) {
+                        let group = createBlock(valuesBlock);
+                        representRef(k, data, group, fieldsList);
+                    } else {
+                        valuesBlock.appendChild(createInputPair(ref, k));
+                        if ( parseFloat(ref[k]) == ref[k]) {
+                            globalNoticedFields[k] = 1.0;
+                        }
+                    }
+                }
             } else {
-                valuesBlock.appendChild(createInputPair(ref, k));
-                if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
-                    globalNoticedFields[k] = 1.0;
+                if ( typeof(data) === 'object' ) {
+                    let group = createBlock(valuesBlock);
+                    representRef(k, data, group, fieldsList);
+                } else {
+                    valuesBlock.appendChild(createInputPair(ref, k));
+                    if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
+                        globalNoticedFields[k] = 1.0;
+                    }
                 }
             }
+
         }
     }
 
@@ -197,7 +208,7 @@ var globalNoticedFields = {};
                 let key     = k.split('#')[0];
                 let newNode = document.createElement(CONST.tagPrefix + key);
                 target.appendChild(newNode);
-                renderXMLNodeFromDict(data[key], newNode);
+                renderXMLNodeFromDict(data[k], newNode);
             }
         } else {
             target.textContent = data;
@@ -236,7 +247,8 @@ var globalNoticedFields = {};
     }
 
     function renderResult() {
-        let result = renderResult_iterate({root:globalScheme}, 'root');
+        console.log(globalSchema);
+        let result = renderResult_iterate({root:globalSchema}, 'root');
 
         textOutput.textContent = renderXMLNodeFromDict(result).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase()).replace('Root', 'root');
     }
@@ -245,9 +257,10 @@ var globalNoticedFields = {};
     function processInput() {
         let temp       = createBlock();
         temp.innerHTML = textInput.value.replace(/<(\/?)(\w+)( [^>]+)?>/gi, ['<$1', CONST.tagPrefix, '$2$3>'].join(''));
-        let schema     = globalScheme = breakXMLToDict(temp);
+        let schema     = globalSchema = breakXMLToDict(temp);
         console.log(schema);
         workBlock.textContent = '';
+        globalWorksBlock.textContent = '';
         globalRefs = [];
         globalNoticedFields = {};
         iterateSchema(schema);
