@@ -37,7 +37,7 @@
 
         inputNode.onblur = () => {
             ref[key] = inputNode.value;
-            console.log(ref, key);
+            //console.log(ref, key);
             renderResult();
         };
 
@@ -88,6 +88,7 @@
     var globalSchema     = null;
 
     textOutput.classList.add('for-copy');
+    globalWorksBlock.classList.add('global-multipliers');
 
     fileInput.type = "file";
     layers[0].appendChild(fileInput);
@@ -110,33 +111,37 @@ var globalNoticedFields = {};
 // processing functions
 {
 
+    function prefixMerge(list, item) {
+        return list.concat([item.split('#')[0]]);
+    }
+
     function generateWorker(type, fieldsAvailable = null, nameKey = 'name') {
-        WORKERS[type] = data => {
+        WORKERS[type] = (data, prefix) => {
             //console.log(data);
 
             if ( !fieldsAvailable ) {
-                representRef(type + ': ' + data[nameKey], data)
+                representRef(type + ': ' + data[nameKey], data, null, null, prefix)
             } else {
                 if ( fieldsAvailable.split ) { fieldsAvailable = fieldsAvailable.split(','); }
-                representRef(type + ': ' + data[nameKey], data, null, fieldsAvailable);
+                representRef(type + ': ' + data[nameKey], data, null, fieldsAvailable, prefix);
             }
 
         }
     }
 
-    function representRef_iterator(ref, k, data, target, fieldsList, valuesBlock) {
+    function representRef_iterator(ref, k, data, target, fieldsList, valuesBlock, prefix) {
         if ( typeof(data) === 'object' ) {
             let group = createBlock(valuesBlock);
-            representRef(k, data, group, fieldsList);
+            representRef(k, data, group, fieldsList, prefixMerge(prefix, k) );
         } else {
             valuesBlock.appendChild(createInputPair(ref, k));
-            if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
-                globalNoticedFields[k] = 1.0;
+            if ( (parseFloat(ref[k]) == ref[k]) ) {
+                globalNoticedFields[prefixMerge(prefix, k).join('.')] = 1.0;
             }
         }
     }
 
-    function representRef(title, ref, target, fieldsList) {
+    function representRef(title, ref, target, fieldsList, prefix = []) {
         let parent = createBlock(target || workBlock);
 
         if ( !target ) {
@@ -170,13 +175,13 @@ var globalNoticedFields = {};
                 let data = ref[k];
 
                 if ( typeof(data) !== 'undefined' ) {
-                    representRef_iterator(ref, k, data, target, fieldsList, valuesBlock);
+                    representRef_iterator(ref, k, data, target, fieldsList, valuesBlock, prefix);
                 }
             });
         } else {
             for (var k in ref) {
                 let data = ref[k];
-                representRef_iterator(ref, k, data, target, fieldsList, valuesBlock);
+                representRef_iterator(ref, k, data, target, fieldsList, valuesBlock, prefix);
             }
         }
 
@@ -217,38 +222,39 @@ var globalNoticedFields = {};
         return target;
     }
 
-    function iterateSchema(data) {
+    function iterateSchema(data, prefix = []) {
         if ( typeof(data) === 'object' ) {
             for (var k in data) {
                 let key = k.split('#')[0];
                 if ( WORKERS[key] && typeof(data[k]) === 'object' ) {
-                    WORKERS[key](data[k]);
+                    WORKERS[key](data[k], prefixMerge(prefix, k));
                 } else {
-                    iterateSchema(data[k]);
+                    iterateSchema(data[k], prefixMerge(prefix, k));
                 }
             }
         }
     }
 
-    function renderResult_iterate(ref, key) {
+    function renderResult_iterate(ref, key, prefix = []) {
         if( typeof(ref[key]) === 'object' ) {
             let result = {};
 
             for ( let k in ref[key] ) {
-                result[k] = renderResult_iterate(ref[key], k);
+                result[k] = renderResult_iterate(ref[key], k, prefixMerge(prefix, k));
             }
 
             return result;
         }
-
-        if ( globalNoticedFields[key] ) {
-            return ref[key] * globalNoticedFields[key];
+        let fullPath = prefix.join('.');
+        //console.log(fullPath);
+        if ( globalNoticedFields[fullPath] ) {
+            return ref[key] * globalNoticedFields[fullPath];
         }
         return ref[key];
     }
 
     function renderResult() {
-        console.log(globalSchema);
+        //console.log(globalSchema);
         let result = renderResult_iterate({root:globalSchema}, 'root');
 
         textOutput.textContent = renderXMLNodeFromDict(result).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase());
@@ -259,7 +265,7 @@ var globalNoticedFields = {};
         let temp       = createBlock();
         temp.innerHTML = textInput.value.replace(/<(\/?)(\w+)( [^>]+)?>/gi, ['<$1', CONST.tagPrefix, '$2$3>'].join(''));
         let schema     = globalSchema = breakXMLToDict(temp);
-        console.log(schema);
+        //console.log(schema);
         workBlock.textContent = '';
         globalWorksBlock.textContent = '';
         globalRefs = [];

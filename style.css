@@ -22,7 +22,7 @@ input {
 }
 .half-size.for-copy {
     padding: 30px;
-    font-size: 1px;
+    /*font-size: 1px;*/
 }
 
 
@@ -34,8 +34,12 @@ input {
     display: inline-block;
 }
 .input-pair > div {
-    width: 200px;
+    min-width: 200px;
+    margin-right: 4px;
 }
+
+.global-multipliers .input-pair > * { display: block; }
+.global-multipliers .input-pair > input { margin-bottom: 20px; }
 
 
 
