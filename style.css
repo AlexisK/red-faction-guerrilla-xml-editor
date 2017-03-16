@@ -12,6 +12,10 @@ input {
     outline: none!important;
 }
 
+.hidden {
+    display: none;
+}
+
 
 .layout-size {
     width: 33.33%; height: 100%;
@@ -58,11 +62,15 @@ input {
 }
 
 .layout-size > .representation {
-    margin-bottom: 40px;
+    margin-bottom: 10px;
 }
 .layout-size > .representation > .title {
     margin-bottom: 10px;
     font-size: 13px;
+    cursor: pointer;
+}
+.layout-size > .representation > .values-group {
+    margin-bottom: 30px;
 }
 
 

@@ -180,6 +180,14 @@ var globalNoticedFields = {};
         nodeTitle.classList.add('title');
         valuesBlock.classList.add('values-group');
 
+        if ( !target ) {
+            valuesBlock.classList.add('hidden');
+            nodeTitle.onclick = function() {
+                valuesBlock.classList.toggle('hidden');
+            }
+
+        }
+
         if ( !target && fieldsList ) {
             fieldsList.forEach(k => {
                 let data = ref[k];
@@ -319,7 +327,12 @@ var globalNoticedFields = {};
 
 generateWorker('item');
 generateWorker('gamestatedata');
-generateWorker('weapon', 'ammo_type,magazine_size,max_rounds,damage_scaling_min,damage_scaling_max');
+generateWorker('weapon',
+    'ammo_type,magazine_size,max_rounds,max_rounds_upgrade,' +
+    'spread_min,spread_max,npc_spread_min,npc_spread_max,spread_multiplier_run,' +
+    'range_max,range_red,default_refire_delay,zoom_magnification,' +
+    'damage_scaling_min,damage_scaling_max,headshot_multiplier,shots_per_round,' +
+    'acceleration');
 generateWorker('upgrade', 'levels');
 generateWorker('explosion', 'ai_sound_radius,radius,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
 generateWorker('vehicle',
