@@ -322,7 +322,11 @@ generateWorker('gamestatedata');
 generateWorker('weapon', 'ammo_type,magazine_size,max_rounds,damage_scaling_min,damage_scaling_max');
 generateWorker('upgrade', 'levels');
 generateWorker('explosion', 'ai_sound_radius,radius,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
-generateWorker('vehicle', 'default_team,max_hitpoints,mass,collision_damage_scale,terrain_damage_scale,roll_torque_factor,pitch_torque_factor,yaw_torque_factor,engine,transmission,turrets,aerodynamics');
+generateWorker('vehicle',
+    'default_team,alert_level_multiplier,max_hitpoints,mass,' +
+    'collision_damage_scale,terrain_damage_scale,bullet_damage_scale,vehicle_damage_scale,' +
+    'roll_torque_factor,pitch_torque_factor,yaw_torque_factor,' +
+    'engine,transmission,turrets,aerodynamics');
 //generateWorker('vehicle');
 generateWorker('character', 'max_hit_points,max_speed,inventory,flags');
 generateWorker('meleemove');
