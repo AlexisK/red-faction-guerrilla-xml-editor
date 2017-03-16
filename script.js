@@ -25,14 +25,14 @@
         return newInput;
     }
 
-    function createInputPair(ref, key) {
+    function createInputPair(ref, key, label) {
         let parent    = createBlock();
         let labelNode = createBlock(parent);
         let inputNode = document.createElement('input');
         parent.appendChild(inputNode);
         parent.classList.add('input-pair');
 
-        labelNode.textContent = key;
+        labelNode.textContent = label || key;
         inputNode.value       = ref[key];
 
         inputNode.onblur = () => {
@@ -187,6 +187,35 @@ var globalNoticedFields = {};
 
     }
 
+
+    function renderPlainTreeSettings_getTargetBlock(el, path) {
+        if ( path.length <= 1 ) {
+            return el;
+        }
+        if ( !el[path[0]] ) {
+            let parent = createBlock(el);
+            let label = createBlock(parent);
+            let group = createBlock(parent);
+
+            label.textContent = path[0];
+            group.classList.add('values-group');
+
+            el[path[0]] = group;
+        }
+        return renderPlainTreeSettings_getTargetBlock(el[path[0]], path.slice(1));
+    }
+
+    function renderPlainTreeSettings(title, ref, target) {
+        let parent = createBlock(target);
+        parent.classList.add('representation');
+
+        for ( let k in ref ) {
+            let pair = createInputPair(ref, k, k.split('.').slice(-1)[0]);
+            renderPlainTreeSettings_getTargetBlock(parent, k.split('.')).appendChild(pair);
+        }
+    }
+
+
     function tagFull(str) { return CONST.tagPrefix + str.toLowerCase(); }
 
     function tagShort(str) { return str.slice(CONST.tagPrefix.length).toLowerCase(); }
@@ -271,7 +300,8 @@ var globalNoticedFields = {};
         globalRefs = [];
         globalNoticedFields = {};
         iterateSchema(schema);
-        representRef('Global multipliers', globalNoticedFields, globalWorksBlock);
+        renderPlainTreeSettings('Global multipliers', globalNoticedFields, globalWorksBlock);
+        //representRef('Global multipliers', globalNoticedFields, globalWorksBlock);
         renderResult();
     }
 }
@@ -282,7 +312,7 @@ generateWorker('gamestatedata');
 generateWorker('weapon', 'ammo_type,magazine_size,max_rounds,damage_scaling_min,damage_scaling_max');
 generateWorker('upgrade', 'levels');
 generateWorker('explosion', 'ai_sound_radius,radius,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
-generateWorker('vehicle', 'default_team,max_hitpoints,mass,collision_damage_scale,terrain_damage_scale,roll_torque_factor,pitch_torque_factor,yaw_torque_factor,engine,transmission,axles,steering,turrets,aerodynamics');
+generateWorker('vehicle', 'default_team,max_hitpoints,mass,collision_damage_scale,terrain_damage_scale,roll_torque_factor,pitch_torque_factor,yaw_torque_factor,engine,transmission,turrets,aerodynamics');
 //generateWorker('vehicle');
 generateWorker('character', 'max_hit_points,max_speed,inventory,flags');
 generateWorker('meleemove');
