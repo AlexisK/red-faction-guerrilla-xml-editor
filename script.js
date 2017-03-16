@@ -4,8 +4,8 @@
         tagPrefix : 'tgn__'
     };
 
-    function makeHalfSize(target) {
-        target.classList.add('half-size');
+    function doLayoutSizing(target) {
+        target.classList.add('layout-size');
         return target;
     }
 
@@ -18,7 +18,7 @@
     }
 
     function createTextInput(target) {
-        let newInput = makeHalfSize(document.createElement('textarea'));
+        let newInput = document.createElement('textarea');
         if ( target ) {
             target.appendChild(newInput);
         }
@@ -81,10 +81,10 @@
     ];
 
     var fileInput        = document.createElement('input');
-    var textInput        = createTextInput(layers[1]);
-    var workBlock        = makeHalfSize(createBlock(layers[1]));
-    var textOutput       = makeHalfSize(createBlock(layers[2]));
-    var globalWorksBlock = makeHalfSize(createBlock(layers[2]));
+    var textInput        = doLayoutSizing(createTextInput(layers[1]));
+    var workBlock        = doLayoutSizing(createBlock(layers[2]));
+    var textOutput       = createTextInput(layers[0]);
+    var globalWorksBlock = doLayoutSizing(createBlock(layers[2]));
     var globalSchema     = null;
 
     textOutput.classList.add('for-copy');
@@ -97,6 +97,16 @@
             textInput.value = text;
             processInput();
         });
+    };
+
+    textOutput.onclick = () => {
+        textOutput.select();
+
+        try {
+            document.execCommand('copy');
+        } catch (err) {
+            console.log('Unable to copy');
+        }
     }
 }
 

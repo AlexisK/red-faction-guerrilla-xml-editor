@@ -13,16 +13,16 @@ input {
 }
 
 
-.half-size {
-    width: 50%; height: 80%;
+.layout-size {
+    width: 33.33%; height: 100%;
     overflow: auto;
     float: left;
     padding: 10px;
     border: 1px solid #eee;
 }
-.half-size.for-copy {
-    padding: 30px;
-    /*font-size: 1px;*/
+.for-copy {
+    width: 100px; height: 20px;
+    font-size: 0;
 }
 
 
@@ -57,10 +57,10 @@ input {
     border-bottom-width: 1px;
 }
 
-.half-size > .representation {
+.layout-size > .representation {
     margin-bottom: 40px;
 }
-.half-size > .representation > .title {
+.layout-size > .representation > .title {
     margin-bottom: 10px;
     font-size: 13px;
 }
