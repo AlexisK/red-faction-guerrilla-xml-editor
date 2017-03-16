@@ -87,6 +87,8 @@
     var globalWorksBlock = makeHalfSize(createBlock(layers[2]));
     var globalSchema     = null;
 
+    textOutput.classList.add('for-copy');
+
     fileInput.type = "file";
     layers[0].appendChild(fileInput);
     fileInput.onchange = function (ev) {
@@ -122,6 +124,18 @@ var globalNoticedFields = {};
         }
     }
 
+    function representRef_iterator(ref, k, data, target, fieldsList, valuesBlock) {
+        if ( typeof(data) === 'object' ) {
+            let group = createBlock(valuesBlock);
+            representRef(k, data, group, fieldsList);
+        } else {
+            valuesBlock.appendChild(createInputPair(ref, k));
+            if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
+                globalNoticedFields[k] = 1.0;
+            }
+        }
+    }
+
     function representRef(title, ref, target, fieldsList) {
         let parent = createBlock(target || workBlock);
 
@@ -151,34 +165,21 @@ var globalNoticedFields = {};
         nodeTitle.classList.add('title');
         valuesBlock.classList.add('values-group');
 
-        for (var k in ref) {
-            let data = ref[k];
+        if ( !target && fieldsList ) {
+            fieldsList.forEach(k => {
+                let data = ref[k];
 
-            if ( !target && fieldsList ) {
-                if (fieldsList.indexOf(k) >= 0) {
-                    if ( typeof(data) === 'object' ) {
-                        let group = createBlock(valuesBlock);
-                        representRef(k, data, group, fieldsList);
-                    } else {
-                        valuesBlock.appendChild(createInputPair(ref, k));
-                        if ( parseFloat(ref[k]) == ref[k]) {
-                            globalNoticedFields[k] = 1.0;
-                        }
-                    }
+                if ( typeof(data) !== 'undefined' ) {
+                    representRef_iterator(ref, k, data, target, fieldsList, valuesBlock);
                 }
-            } else {
-                if ( typeof(data) === 'object' ) {
-                    let group = createBlock(valuesBlock);
-                    representRef(k, data, group, fieldsList);
-                } else {
-                    valuesBlock.appendChild(createInputPair(ref, k));
-                    if ( !target && (parseFloat(ref[k]) == ref[k]) ) {
-                        globalNoticedFields[k] = 1.0;
-                    }
-                }
+            });
+        } else {
+            for (var k in ref) {
+                let data = ref[k];
+                representRef_iterator(ref, k, data, target, fieldsList, valuesBlock);
             }
-
         }
+
     }
 
     function tagFull(str) { return CONST.tagPrefix + str.toLowerCase(); }
@@ -250,7 +251,7 @@ var globalNoticedFields = {};
         console.log(globalSchema);
         let result = renderResult_iterate({root:globalSchema}, 'root');
 
-        textOutput.textContent = renderXMLNodeFromDict(result).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase()).replace('Root', 'root');
+        textOutput.textContent = renderXMLNodeFromDict(result).innerHTML.replace(new RegExp(CONST.tagPrefix + '(\\w)', 'gi'), (match, char) => char.toUpperCase());
     }
 
 
@@ -275,9 +276,12 @@ generateWorker('gamestatedata');
 generateWorker('weapon', 'ammo_type,magazine_size,max_rounds,damage_scaling_min,damage_scaling_max');
 generateWorker('upgrade', 'levels');
 generateWorker('explosion', 'ai_sound_radius,radius,crumbleradius,knockdownradius,flinchradius,impulse,human_damage_min,human_damage_max,vehicle_damage_min,vehicle_damage_max,structural_damage');
-generateWorker('vehicle', 'max_hitpoints,mass,collision_damage_scale');
+generateWorker('vehicle', 'default_team,max_hitpoints,mass,collision_damage_scale,terrain_damage_scale,roll_torque_factor,pitch_torque_factor,yaw_torque_factor,engine,transmission,axles,steering,turrets,aerodynamics');
+//generateWorker('vehicle');
 generateWorker('character', 'max_hit_points,max_speed,inventory,flags');
 generateWorker('meleemove');
+generateWorker('firing_pattern');
+generateWorker('spawn_group_human');
 
 
 textInput.onblur = processInput;

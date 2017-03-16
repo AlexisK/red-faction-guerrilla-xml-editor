@@ -14,11 +14,15 @@ input {
 
 
 .half-size {
-    width: 50%; height: 100%;
+    width: 50%; height: 80%;
     overflow: auto;
     float: left;
     padding: 10px;
     border: 1px solid #eee;
+}
+.half-size.for-copy {
+    padding: 30px;
+    font-size: 1px;
 }
 
 
